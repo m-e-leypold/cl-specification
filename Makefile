@@ -1,5 +1,5 @@
 #
-#   de.m-e-leypold.cl-simple-utils -- Some utility functions.
+#   de.m-e-leypold.cl-specification - DSL coupling specification with tests
 #   Copyright (C) 2022  M E Leypold
 #   
 #   This program is free software: you can redistribute it and/or modify
