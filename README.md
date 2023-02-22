@@ -1,7 +1,7 @@
 CL-SPECIFICATION --- a DSL that couples testing with specification
 ==================================================================
 
-(TBD)
+TODO: complete README.
 
 Compatibility
 -------------
