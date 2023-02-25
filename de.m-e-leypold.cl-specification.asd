@@ -24,7 +24,7 @@
   :author "M E Leypold [elegant-weapons ( AT) m-e-leypold (DOT) de]"
   :licence "GPL3"
   :description "Marries specification and testing"
-  :depends-on ("cl-ppcre" "de.m-e-leypold.cl-simple-utils")
+  :depends-on ("cl-ppcre" "de.m-e-leypold.cl-simple-utils" "de.m-e-leypold.cl-simple-test")
   :components ((:file "specification")))
 
 (defsystem "de.m-e-leypold.cl-specification/tests"
@@ -42,7 +42,8 @@
   :licence "GPL3"
   :depends-on ("cl-ppcre"
 	       "de.m-e-leypold.cl-simple-utils"
-	       "de.m-e-leypold.cl-simple-utils/basic-test")
+	       "de.m-e-leypold.cl-simple-utils/basic-test"
+	       "de.m-e-leypold.cl-simple-test")
   :description "Just all external prerequisites"
   :components ())
 
@@ -50,7 +51,10 @@
   :author "M E Leypold [elegant-weapons ( AT) m-e-leypold (DOT) de]"
   :licence "GPL3"
   :description "Load all systems in CL-SPECIFICATION"
-  :depends-on ("de.m-e-leypold.cl-specification" "de.m-e-leypold.cl-specification/tests"))
+  :depends-on ("de.m-e-leypold.cl-specification"
+	       "de.m-e-leypold.cl-specification/tests"
+	       "de.m-e-leypold.cl-specification/example"
+	       "de.m-e-leypold.cl-specification/example-tests"))
 
 ;;; ---- Example --------------------------------------------------------------------------
 
