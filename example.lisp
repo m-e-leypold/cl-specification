@@ -32,37 +32,20 @@
 
   (:use :common-lisp)
   (:export
-   :fac
-   :square
+   :getcars
    ))
 
 (in-package :de.m-e-leypold.cl-specification/example)
 
 ;;; * -- The functions we want to test ----------------------------------------------------------------------|
 ;;;
-;;;   TODO: Find better examples
 
-(defun fac (n)
+(defun getcars (items)
   "
-  Calculate faculty of N.
-
-  - Defined for positive numbers as (FAC N) => 1 * 2 ... (N - 1) * N. See test
-    `TEST:fac-satisfies-spec'.
-
-  - Signals error on negative number, see test `TEST:fac-signal-on-non-positive-input'. The
-    error says 'Argument must be positive', see test `TEST:fac-error-message-as-expected'.
+  TBD
 "
-
-  (assert (< 0 n) () (format nil "Argument must be positive, is ~S" n))
-  (if (= 1 n)
-      1
-      (* n (fac (1- n)))))
-
-
-;;; The implementation of SQUARE is defective for demonstration purposes. It's test will fail.
-
-(defun square (n)
-  "
-  Calculate the sqare of N.
-"
-  (* n n n))
+  (let ((cars '()))
+    (dolist (item items)
+      ;; TBD error handling, restart handler
+      (push (car item) cars))
+    (reverse cars)))

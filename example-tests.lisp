@@ -98,6 +98,45 @@
 
 (specifications *SPECIFICATIONS*)
 
+(specification contracts  "Contracts of the basic functions in EXAMPLE"
+  "
+  Basic primitives are
+
+  - `GETCARS' -- get the first element of all items in a list. See specfication `GETCARS/'
+")
+
+(contract getcars/  "Contract of `GETCAR' (cars of all items in a list)"
+  "
+  TBD
+"
+  )
+
+(clause getcars/1  "Returns the cars of list elements"
+  "
+  `GETCARS' returns a list of the CAR of all items in a given list in the same order as the
+  original items in the list.
+
+  Calling (getcars SOME-LIST) iterates over all items ITEM in SOME-LIST and collects (car ITEM)
+  in a list which it then returns.
+"
+  (let ((test-input '((a 1) (b 2) (c 3))))
+    (assert (equal (getcars test-input)
+		   '(a b c)))))
+
+
+(clause getcars/2  "Error if argument is not `consp'"
+  "
+  the argument to `getcars' needs to be a `consp'.
+
+  if the argument to `getcars' is not satisfying `consp' an `error' will be signalled.
+"
+
+
+  )
+
+
+
+
 ;;; * File epilog -------------------------------------------------------------------------------------------|
 
 (end-of-load-file)

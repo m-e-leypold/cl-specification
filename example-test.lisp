@@ -59,7 +59,9 @@
   (:documentation "Loader + Driver to run EXAMPLE-TESTS")
   (:use
    :common-lisp
-   :de.m-e-leypold.cl-specification))
+   :de.m-e-leypold.cl-simple-test
+   :de.m-e-leypold.cl-specification
+   ))
 
 (in-package :de.m-e-leypold.cl-specification/example-run-tests)
 
@@ -79,4 +81,3 @@
     (run-tests)))
 
 (run-tests*)
-

@@ -39,10 +39,15 @@
    ")
 
   (:use :common-lisp :cl-ppcre :de.m-e-leypold.cl-simple-test)
-  (:import-from :de.m-e-leypold.cl-simple-utils
+  (:import-from
+   :de.m-e-leypold.cl-simple-utils
+
    :defpackage-doc
    :defrestart
    :with-gensyms
+   :define-documentation-node
+   :base-documentation-node
+   :make-docstring
    )
 
   (:export
@@ -50,6 +55,9 @@
    :run-tests  ;; a re-export for convenience
 
    :specifications
+   :specification
+   :contract
+   :clause
    ))
 
 (in-package :de.m-e-leypold.cl-specification)
@@ -64,5 +72,69 @@
 ;;; * -- Defining specifications ----------------------------------------------------------------------------|
 
 (defmacro specifications (varname)
+  "
+  Define a specifications bundle in VARNAME. This will be an instance of `SPECIFICATION-BUNDLE'.
+
+  It also establishes (...)
+
+  TODO: docstring
+"
   `(progn
-     (defvar ,varname)))
+     (define-documentation-node ,varname specification-bundle)))
+
+(defmacro specification (name heading &body body-text)
+  "
+  TODO: docstring
+"
+  (assert (not (cdr body-text)) nil "Argument body-text to `SPECIFICATION' needs to be a single string")
+  (setf body-text (car body-text))
+  `(progn
+     (defun ,name ()
+       ,(format nil "~a (specification) -- ~a.~%~%~a~&" name heading body-text)
+       nil
+       )
+     ;; TODO: Now this needs to become a docnode, too.
+     ))
+
+(defmacro contract (name heading &body body-text)
+  "
+  TODO: docstring
+"
+  (assert (not (cdr body-text)) nil "Argument body-text to `CONTRACT' needs to be a single string")
+  (setf body-text (car body-text))
+  `(progn
+     (defun ,name ()
+       ,(format nil "~a (specification contract) -- ~a.~%~%~a~&" name heading body-text)
+       nil
+       )
+  ;; TODO: Now this needs to become a docnode, too.
+  ))
+
+(defmacro clause (name heading &body body-text+body)
+  "
+  TODO: docstring
+"
+  (destructuring-bind (body-text &optional body) body-text+body
+    `(progn
+       (deftest ,name ()
+	   ,(format nil "~a (specification clause) -- ~a.~%~%~a~&" name heading body-text)
+	 ,body)
+       ;; TODO: Now this needs to become a docnode, too.
+       )))
+
+;;; * -- Specification bundles ------------------------------------------------------------------------------|
+
+(defclass documentation-object (base-documentation-node)
+  ())
+
+(defmethod make-docstring ((node documentation-object))
+  "TBD -- not yet implemented")
+
+(defclass specification-bundle (base-documentation-node)
+  ())
+
+(defmethod make-docstring ((node specification-bundle))
+  "TBD -- not yet implemented")
+
+(defun close-specification-bundle ()
+  (format t "closing spec~%"))
