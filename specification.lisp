@@ -64,4 +64,5 @@
 ;;; * -- Defining specifications ----------------------------------------------------------------------------|
 
 (defmacro specifications (varname)
-  )
+  `(progn
+     (defvar ,varname)))
