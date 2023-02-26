@@ -55,6 +55,28 @@
 
 ;;; * The tests ---------------------------------------------------------------------------------------------|
 
+;;; ** Testing the example ----------------------------------------------------------------------------------|
+
+(deftest! example-integrity ()
+  "
+  Checks that the example still works.
+"
+  ;; Note: FTM this test is skipped if the lisp system is not sbcl.
+  
+  #+sbcl
+  (let* (( command-line '("sbcl"
+			  "--noinform"
+			  "--disable-debugger"
+			  "--load" "example-test.lisp" "--quit")))
+    (multiple-value-bind (output error-out exit-status)
+	(uiop:run-program command-line :output :string :ignore-error-status T)
+      (declare (ignorable output error-out))
+      (format t "output => ~S~%" output)
+      (assert (= exit-status 0))
+      (assert (cl-ppcre:scan "\\nALL +PASSED +\\([0-9] +tests\\)" output))
+      )))
+
+
 ;;; * Package epilog ----------------------------------------------------------------------------------------|
 
 (end-test-registry!)

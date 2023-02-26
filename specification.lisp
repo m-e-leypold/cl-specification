@@ -45,9 +45,11 @@
    :defpackage-doc
    :defrestart
    :with-gensyms
+   :downcase-symbol-name
    :define-documentation-node
    :base-documentation-node
    :make-docstring
+   :add-documentation-node-to-function
    )
 
   (:export
@@ -79,6 +81,8 @@
 
   TODO: docstring
 "
+  ;; TODO register varname in a global registry (so we can later extract/search specs)
+  
   `(progn
      (define-documentation-node ,varname specification-bundle)))
 
@@ -119,22 +123,50 @@
        (deftest ,name ()
 	   ,(format nil "~a (specification clause) -- ~a.~%~%~a~&" name heading body-text)
 	 ,body)
-       ;; TODO: Now this needs to become a docnode, too.
-       )))
+       ;; TODO: This must be conditional on the mode tracked in the specifications root object
+       (add-documentation-node-to-function (quote ,name)
+					   'documentation-node
+					   :node-type 'clause
+					   :name (quote ,name)
+					   :heading ,heading
+					   :body-text ,body-text))))
 
 ;;; * -- Specification bundles ------------------------------------------------------------------------------|
 
-(defclass documentation-object (base-documentation-node)
-  ())
 
-(defmethod make-docstring ((node documentation-object))
-  "TBD -- not yet implemented")
+(defclass documentation-node (base-documentation-node)
+  ((name    :accessor name    :initarg :name
+	    :initform (error "for `documentation-node' :NAME must be given at init time"))
+   (node-type :accessor node-type    :initarg :node-type
+	    :initform (error "for `documentation-node' :NODE-TYPE must be given at init time"))
+   (heading :accessor heading :initarg :heading
+	    :initform (error "for `documentation-node' :HEADING must be given at init time"))
+   (body-text :accessor body-text :initarg :body-text
+	      :initform (error "for `documentation-node' :BODY-TEXT must be given at init time"))
+   (parent  :accessor parent :initarg :parent :initform nil)))
 
+
+(defgeneric format-documentation (node stream)
+  )
+
+(defmethod make-docstring ((node documentation-node))
+  (with-output-to-string (stream)
+    (format-documentation node stream)))
+
+(defmethod format-documentation ((node documentation-node) stream)
+  (format stream
+	  "~%~a [~a] --- ~a.~%~a~&"
+	  (name node)
+	  (downcase-symbol-name (node-type node))
+	  (heading node) (body-text node)) 
+  ;; TODO: Format postamble with navigation to parent and siblings
+  )
+  
 (defclass specification-bundle (base-documentation-node)
   ())
 
 (defmethod make-docstring ((node specification-bundle))
-  "TBD -- not yet implemented")
+  "TBD -- not yet implemented. Should be list of specifications.")
 
 (defun close-specification-bundle ()
   (format t "closing spec~%"))

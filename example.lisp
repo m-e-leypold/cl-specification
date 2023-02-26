@@ -33,6 +33,8 @@
   (:use :common-lisp)
   (:export
    :getcars
+   :getcars/1
+   :getcars/2
    ))
 
 (in-package :de.m-e-leypold.cl-specification/example)
