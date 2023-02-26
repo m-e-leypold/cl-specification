@@ -71,70 +71,8 @@
 (defun load-tests ()
   (asdf:load-system "de.m-e-leypold.cl-specificationy/tests"))
 
-;;; * -- Defining specifications ----------------------------------------------------------------------------|
+;;; * -- Documentation nodes
 
-(defmacro specifications (varname)
-  "
-  Define a specifications bundle in VARNAME. This will be an instance of `SPECIFICATION-BUNDLE'.
-
-  It also establishes (...)
-
-  TODO: docstring
-"
-  ;; TODO register varname in a global registry (so we can later extract/search specs)
-
-  `(progn
-     (define-documentation-node ,varname specification-bundle
-       :name ,varname
-       :node-type specifications
-       :load-file ,(or *compile-file-pathname* *load-pathname*))))
-
-(defmacro specification (name heading &body body-text)
-  "
-  TODO: docstring
-"
-  (assert (not (cdr body-text)) nil "Argument body-text to `SPECIFICATION' needs to be a single string")
-  (setf body-text (car body-text))
-  `(progn
-     (defun ,name ()
-       ,(format nil "~a (specification) -- ~a.~%~%~a~&" name heading body-text)
-       nil
-       )
-     ;; TODO: Now this needs to become a docnode, too.
-     ))
-
-(defmacro contract (name heading &body body-text)
-  "
-  TODO: docstring
-"
-  (assert (not (cdr body-text)) nil "Argument body-text to `CONTRACT' needs to be a single string")
-  (setf body-text (car body-text))
-  `(progn
-     (defun ,name ()
-       ,(format nil "~a (specification contract) -- ~a.~%~%~a~&" name heading body-text)
-       nil
-       )
-  ;; TODO: Now this needs to become a docnode, too.
-  ))
-
-(defmacro clause (name heading &body body-text+body)
-  "
-  TODO: docstring
-"
-  (destructuring-bind (body-text &optional body) body-text+body
-    `(progn
-       (deftest ,name ()
-	   ,(format nil "~a (specification clause) -- ~a.~%~%~a~&" name heading body-text)
-	 ,body)
-       ;; TODO: This must be conditional on the mode tracked in the specifications root object
-       (add-documentation-node-to-function (quote ,name)
-					   'content-node
-					   :node-type 'clause
-					   :name (quote ,name)
-					   :heading ,heading
-					   :body-text ,body-text))))
-
-;;; * -- Specification bundles ------------------------------------------------------------------------------|
 
 (defclass documentation-node (base-documentation-node)
   ((name    :accessor name    :initarg :name
@@ -202,6 +140,71 @@
   (format stream "~%~a~&" (body-text node))
   ;; TODO: Format postamble with navigation to parent and siblings
   )
+
+;;; * -- Defining specifications ----------------------------------------------------------------------------|
+
+(defmacro specifications (varname)
+  "
+  Define a specifications bundle in VARNAME. This will be an instance of `SPECIFICATION-BUNDLE'.
+
+  It also establishes (...)
+
+  TODO: docstring
+"
+  ;; TODO register varname in a global registry (so we can later extract/search specs)
+
+  `(progn
+     (define-documentation-node ,varname specification-bundle
+       :name ,varname
+       :node-type specifications
+       :load-file ,(or *compile-file-pathname* *load-pathname*))))
+
+(defmacro specification (name heading &body body-text)
+  "
+  TODO: docstring
+"
+  (assert (not (cdr body-text)) nil "Argument body-text to `SPECIFICATION' needs to be a single string")
+  (setf body-text (car body-text))
+  `(progn
+     (defun ,name ()
+       ,(format nil "~a (specification) -- ~a.~%~%~a~&" name heading body-text)
+       nil
+       )
+     ;; TODO: Now this needs to become a docnode, too.
+     ))
+
+(defmacro contract (name heading &body body-text)
+  "
+  TODO: docstring
+"
+  (assert (not (cdr body-text)) nil "Argument body-text to `CONTRACT' needs to be a single string")
+  (setf body-text (car body-text))
+  `(progn
+     (defun ,name ()
+       ,(format nil "~a (specification contract) -- ~a.~%~%~a~&" name heading body-text)
+       nil
+       )
+  ;; TODO: Now this needs to become a docnode, too.
+  ))
+
+(defmacro clause (name heading &body body-text+body)
+  "
+  TODO: docstring
+"
+  (destructuring-bind (body-text &optional body) body-text+body
+    `(progn
+       (deftest ,name ()
+	   ,(format nil "~a (specification clause) -- ~a.~%~%~a~&" name heading body-text)
+	 ,body)
+       ;; TODO: This must be conditional on the mode tracked in the specifications root object
+       (add-documentation-node-to-function (quote ,name)
+					   'content-node
+					   :node-type 'clause
+					   :name (quote ,name)
+					   :heading ,heading
+					   :body-text ,body-text))))
+
+;;; * -- Specification bundles ------------------------------------------------------------------------------|
 
 (defclass specification-bundle (documentation-node)
   ((load-file  :accessor load-file :initarg :load-file
