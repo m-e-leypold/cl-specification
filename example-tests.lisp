@@ -107,7 +107,8 @@
 
 (contract getcars/  "Contract of `GETCAR' (cars of all items in a list)"
   "
-  TBD
+  `GETCARS' returns a list of the first elements of every item in a given list in the same
+  order as the original items in the list.
 "
   )
 

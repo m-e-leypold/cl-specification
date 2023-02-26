@@ -82,9 +82,12 @@
   TODO: docstring
 "
   ;; TODO register varname in a global registry (so we can later extract/search specs)
-  
+
   `(progn
-     (define-documentation-node ,varname specification-bundle)))
+     (define-documentation-node ,varname specification-bundle
+       :name ,varname
+       :node-type specifications
+       :load-file ,(or *compile-file-pathname* *load-pathname*))))
 
 (defmacro specification (name heading &body body-text)
   "
@@ -125,7 +128,7 @@
 	 ,body)
        ;; TODO: This must be conditional on the mode tracked in the specifications root object
        (add-documentation-node-to-function (quote ,name)
-					   'documentation-node
+					   'content-node
 					   :node-type 'clause
 					   :name (quote ,name)
 					   :heading ,heading
@@ -133,18 +136,41 @@
 
 ;;; * -- Specification bundles ------------------------------------------------------------------------------|
 
-
 (defclass documentation-node (base-documentation-node)
   ((name    :accessor name    :initarg :name
-	    :initform (error "for `documentation-node' :NAME must be given at init time"))
-   (node-type :accessor node-type    :initarg :node-type
-	    :initform (error "for `documentation-node' :NODE-TYPE must be given at init time"))
-   (heading :accessor heading :initarg :heading
-	    :initform (error "for `documentation-node' :HEADING must be given at init time"))
-   (body-text :accessor body-text :initarg :body-text
-	      :initform (error "for `documentation-node' :BODY-TEXT must be given at init time"))
-   (parent  :accessor parent :initarg :parent :initform nil)))
+	    :initform (error "for `documentation-node' :NAME must be given at init time")
 
+	    :documentation "
+              A symbol to which the node is bound and which can be used for reference in other
+              documentation strings
+            ")
+   (node-type :accessor node-type    :initarg :node-type
+	    :initform (error "for `documentation-node' :NODE-TYPE must be given at init time")))
+
+
+  (:documentation
+   "
+   Base class for all nodes in a specification tree, even `SPECIFICATON-BUNDLE'.
+
+   `DOCUMENTATION-NODE' serves as the base class for all nodes that carry documentation,
+   including `SPECIFICATON-BUNDLE'.
+
+   Every node has at least a `NAME', a `NODE-TYPE' and a `TAGLINE', which in some cases is synthesized,
+   in some cases produced from `HEADING'.
+
+   `MAKE-DOCSTRING' is delegated to the generic `FORMAT-DOCSTRING', which emits the generated
+   documentation string into a stream paragraph by paragraph while following the method
+   chain. Extension here typically means appening more paragraphs.
+
+   There are two major specialications on `DOCUMENTATION-NODE':
+
+   - `CONTENT-NODE' contains user written specification (see `SPECIFICATION', `CONTRACT', `CLAUSE').
+   - `SPECIFICATION-BUNDLE' is just a directory of specifications of type `SPECIFICATION'.
+"))
+
+
+(defgeneric tagline (node)
+  )
 
 (defgeneric format-documentation (node stream)
   )
@@ -154,19 +180,43 @@
     (format-documentation node stream)))
 
 (defmethod format-documentation ((node documentation-node) stream)
-  (format stream
-	  "~%~a [~a] --- ~a.~%~a~&"
+  (format stream "~%~a [~a] --- ~a."
 	  (name node)
 	  (downcase-symbol-name (node-type node))
-	  (heading node) (body-text node)) 
+	  (tagline node)))
+
+(defclass content-node (documentation-node)
+  ((heading :accessor heading :initarg :heading
+	    :initform (error "for `content-node' :HEADING must be given at init time"))
+   (body-text :accessor body-text :initarg :body-text
+	      :initform (error "for `content-node' :BODY-TEXT must be given at init time"))
+   (parent  :accessor parent :initarg :parent :initform nil)))
+
+
+
+(defmethod tagline ((node content-node))
+  (heading node))
+
+(defmethod format-documentation ((node content-node) stream)
+  (call-next-method)
+  (format stream "~%~a~&" (body-text node))
   ;; TODO: Format postamble with navigation to parent and siblings
   )
-  
-(defclass specification-bundle (base-documentation-node)
-  ())
 
-(defmethod make-docstring ((node specification-bundle))
-  "TBD -- not yet implemented. Should be list of specifications.")
+(defclass specification-bundle (documentation-node)
+  ((load-file  :accessor load-file :initarg :load-file
+	       :initform (error "for `specification bundle' :LOAD-FILE must be given at init time"))
+   (load-in-progress :accessor load-in-progress :initarg :load-in-progress :initform T)))
+
+
+(defmethod tagline ((node specification-bundle))
+  (format nil "Bundle in ~A" (symbol-package (name node))))
+
+(defmethod format-documentation ((node specification-bundle) stream)
+  (call-next-method)
+  (format stream "~&~%  Package: ~a~%  File:    ~S~%"
+	  (package-name (symbol-package (name node)))
+	  (load-file node)))
 
 (defun close-specification-bundle ()
   (format t "closing spec~%"))
