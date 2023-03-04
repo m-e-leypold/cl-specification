@@ -64,16 +64,19 @@
    ;; It is not necessary to export all specficiations, but useful for invoking the tests from
    ;; the REPL and also to document that these symbols are the existing specifications.
 
-   :fac-satisfies-spec
-   :fac-signal-on-non-positive-input
-   :fac-error-message-as-expected
-   :square-is-mathematically-correct))
+   :getcars/
+   :getcars/1
+   :getcars/2
+
+   ;; TODO: Auto export spec nodes
+   
+   ))
+
 
 ;;; FN.1: From cl-cimple-utils we use `inject-package-local-nickname' (see below), which is not necessary, but
 ;;; convenient.
 
 (in-package :de.m-e-leypold.cl-specification/example-tests)
-
 
 ;;; The following form adds the package local nickname "SPEC" for this package (the tests) to the system under
 ;;; test. That has the advantage, that after loading the tests, it is then possible to refer to tests as e.g.
@@ -86,6 +89,10 @@
 (inject-package-local-nickname "SPEC"
 			       :de.m-e-leypold.cl-specification/example-tests
 			       :de.m-e-leypold.cl-specification/example)
+
+(inject-package-local-nickname "SPEC"
+			       :de.m-e-leypold.cl-specification/example-tests
+			       :de.m-e-leypold.cl-specification/example-tests)
 
 ;; The following binds the package documentation string to a symbol in the package, so we can refere to it in
 ;; other documentation strings as a symbol. This is strictly optional and might be useful to describe a test
@@ -102,7 +109,7 @@
   "
   Basic primitives are
 
-  - `GETCARS' -- get the first element of all items in a list. See specification `GETCARS/'
+  - `GETCARS' -- get the first element of all items in a list. See specification `GETCARS/'.
 ")
 
 (contract getcars/  "Contract of `GETCAR' (cars of all items in a list)"
@@ -112,14 +119,21 @@
 "
   )
 
-(clause getcars/1  "`GETCAR' returns the cars of list elements"
+(clause getcars/1  "`GETCARS' returns the cars of list elements"
   "
   `GETCARS' returns a list of the first elements of every item in a given list in the same
   order as the original items in the list.
 
   Calling (getcars SOME-LIST) iterates over all items ITEM in SOME-LIST and collects (car ITEM)
   in a result list which it then returns.
+
+  REMOVE: See GETCARS/
+  REMOVE: See SPEC::GETCARS/
+  REMOVE: See DE.M-E-LEYPOLD.CL-SPECIFICATION/EXAMPLE-TESTS::GETCARS/
 "
+  
+  ;; (format t "Hello!~%")
+  
   (let ((test-input '((a 1) (b 2) (c 3))))
     (assert (equal (getcars test-input)
 		   '(a b c)))))

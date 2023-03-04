@@ -46,7 +46,6 @@
 ;;;
 ;;;   First we load the system under test via ASDF.
 ;;;
-
 (asdf:load-system "de.m-e-leypold.cl-specification/example-tests")
 
 ;;; * Define sandbox for tests ------------------------------------------------------------------------------|

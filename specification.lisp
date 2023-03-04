@@ -35,7 +35,7 @@
 
    DE.M-E-LEYPOLD.CL-SPECIFICATION (...)
 
-   TODO: Complet package docstring
+   TODO: Complete package docstring
    ")
 
   (:use :common-lisp :cl-ppcre :de.m-e-leypold.cl-simple-test)
@@ -46,10 +46,12 @@
    :defrestart
    :with-gensyms
    :downcase-symbol-name
+   :with-downcase-symbols
+   
    :define-documentation-node
    :base-documentation-node
    :make-docstring
-   :add-documentation-node-to-function
+   :add-documentation-node-to-function  
    )
 
   (:export
@@ -57,6 +59,8 @@
    :run-tests  ;; a re-export for convenience
 
    :specifications
+   :specification-bundles
+   
    :specification
    :contract
    :clause
@@ -73,19 +77,33 @@
 
 ;;; * -- Documentation nodes
 
+(defvar *specification-bundles* '()
+  " A list containing all symbols that are bound to specification bundles of class
+  `SPECIFICATION-BUNDLE', which have been defined with macro `SEPECIFICATIONS'.
+")
+
+(defun register-specification-bundle (bundle-symbol)
+  (assert (symbolp bundle-symbol))
+  ;; TODO: Possible locking. id:issue:ba676dc2-0371-4508-a530-b97662b59cd3
+  ;; TODO: Type assertion
+  (pushnew bundle-symbol *specification-bundles*))
+
+(defun specification-bundles ()
+  ;; TODO: Possible locking. id:issue:ba676dc2-0371-4508-a530-b97662b59cd3
+  ;; TODO: Type assertion
+  (reverse *specification-bundles*))
 
 (defclass documentation-node (base-documentation-node)
   ((name    :accessor name    :initarg :name
 	    :initform (error "for `documentation-node' :NAME must be given at init time")
-
+	    
 	    :documentation "
-              A symbol to which the node is bound and which can be used for reference in other
+              A symbol to which the node is bound and which can be used for reference in 
               documentation strings
             ")
    (node-type :accessor node-type    :initarg :node-type
-	    :initform (error "for `documentation-node' :NODE-TYPE must be given at init time")))
-
-
+	      :initform (error "for `documentation-node' :NODE-TYPE must be given at init time")))
+  
   (:documentation
    "
    Base class for all nodes in a specification tree, even `SPECIFICATON-BUNDLE'.
@@ -130,8 +148,6 @@
 	      :initform (error "for `content-node' :BODY-TEXT must be given at init time"))
    (parent  :accessor parent :initarg :parent :initform nil)))
 
-
-
 (defmethod tagline ((node content-node))
   (heading node))
 
@@ -140,6 +156,22 @@
   (format stream "~%~a~&" (body-text node))
   ;; TODO: Format postamble with navigation to parent and siblings
   )
+
+(defclass clause-node (content-node)
+  ((code :accessor code :initarg :code
+	 :initform (error "for `clause-node' :CODE must be given at init time"))))
+
+(defmethod format-documentation ((node clause-node) stream)
+  (call-next-method)
+  (with-downcase-symbols
+    (let ((*package* (or (symbol-package (name node)) (find-package "KEYWORD"))))
+
+      ;; TODO: As soon as we have a parent (or actually when we have one), format the parent as context/specification
+      
+      (format stream "~&~%-----~%")
+      (format stream "Tests~%")
+      (format stream "-----~%")
+      (format stream "~&~%~S~%" (code node)))))
 
 ;;; * -- Defining specifications ----------------------------------------------------------------------------|
 
@@ -171,7 +203,14 @@
        nil
        )
      ;; TODO: Now this needs to become a docnode, too.
-     ))
+     (add-documentation-node-to-function (quote ,name)
+					 'content-node
+					 :node-type 'clause
+					 :name (quote ,name)
+					 :heading ,heading
+					 :body-text ,body-text
+					 )))
+
 
 (defmacro contract (name heading &body body-text)
   "
@@ -184,25 +223,34 @@
        ,(format nil "~a (specification contract) -- ~a.~%~%~a~&" name heading body-text)
        nil
        )
-  ;; TODO: Now this needs to become a docnode, too.
-  ))
+     (add-documentation-node-to-function (quote ,name)
+					 'content-node
+					 :node-type 'clause
+					 :name (quote ,name)
+					 :heading ,heading
+					 :body-text ,body-text
+					 )))
 
 (defmacro clause (name heading &body body-text+body)
   "
   TODO: docstring
 "
-  (destructuring-bind (body-text &optional body) body-text+body
+  (destructuring-bind (body-text &rest body) body-text+body
+    (format t "code => ~S" body)
     `(progn
        (deftest ,name ()
 	   ,(format nil "~a (specification clause) -- ~a.~%~%~a~&" name heading body-text)
-	 ,body)
-       ;; TODO: This must be conditional on the mode tracked in the specifications root object
+	 ,@body
+	 )
+       ;; TODO: This must be conditional on the mode tracked in the specifications root object      
        (add-documentation-node-to-function (quote ,name)
-					   'content-node
+					   'clause-node
 					   :node-type 'clause
 					   :name (quote ,name)
 					   :heading ,heading
-					   :body-text ,body-text))))
+					   :body-text ,body-text
+					   :code (quote ,body)
+					   ))))
 
 ;;; * -- Specification bundles ------------------------------------------------------------------------------|
 
@@ -210,7 +258,6 @@
   ((load-file  :accessor load-file :initarg :load-file
 	       :initform (error "for `specification bundle' :LOAD-FILE must be given at init time"))
    (load-in-progress :accessor load-in-progress :initarg :load-in-progress :initform T)))
-
 
 (defmethod tagline ((node specification-bundle))
   (format nil "Bundle in ~A" (symbol-package (name node))))
